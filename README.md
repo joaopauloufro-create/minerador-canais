@@ -38,14 +38,21 @@ A "chave da API" é como uma senha que permite ao site consultar dados públicos
 4. **Crie a chave:**
    - No menu ☰, vá em **"APIs e serviços" → "Credenciais"**.
    - Clique em **"+ Criar credenciais"** → **"Chave de API"**.
-   - Vai aparecer uma janela com a chave — um texto longo que começa com `AIza...`.
+   - Abre um painel **"Criar chave de API"**. Preencha assim:
+     - **Nome:** pode deixar "Chave de API 1" ou trocar por `Minerador de Outliers`.
+     - **Selecionar restrições da API:** clique no campo **"Nenhuma API selecionada"**. Na lista que abre, digite `YouTube` no campo **"Filtrar"**, marque **"YouTube Data API v3"** e clique em **"OK"**.
+       - Se "YouTube Data API v3" **não aparecer** na lista, a API ainda não foi ativada: feche o painel, faça o item 3 acima e tente de novo.
+       - Ignore o aviso cinza sobre "Conta de serviço necessária" — ele vale só para as APIs Agent Platform e Gemini, não para o YouTube.
+     - **Restrições do aplicativo:** por enquanto deixe em **"Nenhum"**. Você volta aqui depois de colocar o site no ar (item 5).
+   - Clique em **"Criar"** no fim do painel.
+   - Vai aparecer a chave — um texto longo que começa com `AIza...`.
    - Clique no ícone de copiar e guarde a chave em um lugar seguro (por exemplo, um bloco de notas).
-5. **(Recomendado) Proteja sua chave:** assim, mesmo que alguém veja sua chave, não consegue usá-la em outro site.
-   - Na tela "Credenciais", clique no nome da chave que você criou.
-   - Em **"Restrições de aplicativo"**, escolha **"Sites"** e clique em **"Adicionar"**. Digite o endereço do seu site seguido de `*`, por exemplo:
+5. **(Recomendado, depois do Passo 2) Proteja sua chave:** assim, mesmo que alguém veja sua chave, não consegue usá-la em outro site.
+   - Em **"APIs e serviços" → "Credenciais"**, clique no nome da chave que você criou.
+   - Em **"Restrições do aplicativo"**, escolha **"Sites"** e clique em **"Adicionar"**. Digite o endereço do seu site seguido de `*`, por exemplo:
      `https://SEU-USUARIO.github.io/*`
      (você descobre esse endereço no Passo 2).
-   - Em **"Restrições de API"**, escolha **"Restringir chave"** e marque só **"YouTube Data API v3"**.
+   - Confira se em **"Restrições da API"** está marcada só a **"YouTube Data API v3"**.
    - Clique em **"Salvar"**. Pode levar até 5 minutos para valer.
 
 > ⚠️ **Nunca** cole sua chave dentro dos arquivos do projeto nem publique em lugar nenhum. O site pede a chave numa tela própria e guarda só no seu navegador.
