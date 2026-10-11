@@ -71,8 +71,10 @@ O GitHub Pages hospeda sites como este de graça.
 3. Clique em **"Settings"** → no menu da esquerda, clique em **"Pages"**.
 4. Em **"Build and deployment"**:
    - **Source:** escolha **"Deploy from a branch"**.
-   - **Branch:** escolha a branch onde está o código (normalmente **`main`**) e a pasta **`/ (root)`**.
+   - **Branch:** clique no botão **"None ▾"** (ao lado de "Save"). Na lista, escolha a branch onde está o código (normalmente **`main`**; se só existir uma branch, escolha ela).
+   - Ao lado aparece um segundo botão com a pasta: deixe **`/ (root)`**.
    - Clique em **"Save"**.
+   - Pode ignorar a seção "Visibility / GitHub Enterprise" — é paga e não é necessária.
 5. Espere de 1 a 3 minutos e recarregue a página. Vai aparecer no topo:
    **"Your site is live at `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/`"**.
    Esse é o endereço do seu site! Salve nos favoritos do navegador e do celular.
