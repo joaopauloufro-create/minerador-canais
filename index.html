@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minerador de Outliers</title>
+  <meta name="description" content="Encontre vídeos e canais do YouTube que estão performando muito acima da média.">
+  <meta name="theme-color" content="#0f1117">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛏️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Aplica o tema salvo antes de desenhar a página (evita "piscar").
+    try {
+      var s = JSON.parse(localStorage.getItem('mo:settings') || '{}');
+      if (s.theme === 'dark' || s.theme === 'light') document.documentElement.dataset.theme = s.theme;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">⛏️</span>
+      <span>Minerador de <strong>Outliers</strong></span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="search" role="tab">🔎 Buscar</button>
+      <button class="tab" data-tab="favorites" role="tab">⭐ Favoritos <span id="favCount" class="pill"></span></button>
+      <button class="tab" data-tab="settings" role="tab">⚙️ <span class="hide-sm">Configurações</span><span class="show-sm">Ajustes</span></button>
+    </nav>
+    <button id="themeToggle" class="icon-btn" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">🌓</button>
+  </header>
+
+  <main>
+    <!-- ================= BUSCAR ================= -->
+    <section id="tab-search" class="panel active">
+      <div id="noKeyBanner" class="banner warn hidden">
+        Você ainda não cadastrou sua chave da API do YouTube.
+        <button class="link-btn" data-goto="settings">Ir para Configurações →</button>
+      </div>
+
+      <form id="searchForm" class="card form-card" autocomplete="off">
+        <div class="field full">
+          <label for="q">Palavras-chave do nicho</label>
+          <input id="q" type="search" placeholder='ex.: jazz lofi, oração narrada, motivação disciplina' required>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="lang">Idioma</label>
+            <select id="lang">
+              <option value="">Qualquer</option>
+              <option value="pt" selected>Português</option>
+              <option value="en">Inglês</option>
+              <option value="es">Espanhol</option>
+              <option value="fr">Francês</option>
+              <option value="de">Alemão</option>
+              <option value="it">Italiano</option>
+              <option value="ja">Japonês</option>
+              <option value="ko">Coreano</option>
+              <option value="hi">Hindi</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="region">País</label>
+            <select id="region">
+              <option value="">Qualquer</option>
+              <option value="BR" selected>Brasil</option>
+              <option value="PT">Portugal</option>
+              <option value="US">Estados Unidos</option>
+              <option value="GB">Reino Unido</option>
+              <option value="CA">Canadá</option>
+              <option value="AU">Austrália</option>
+              <option value="ES">Espanha</option>
+              <option value="MX">México</option>
+              <option value="AR">Argentina</option>
+              <option value="CO">Colômbia</option>
+              <option value="FR">França</option>
+              <option value="DE">Alemanha</option>
+              <option value="IT">Itália</option>
+              <option value="IN">Índia</option>
+              <option value="JP">Japão</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="days">Publicados nos últimos</label>
+            <select id="days">
+              <option value="7">7 dias</option>
+              <option value="30" selected>30 dias</option>
+              <option value="90">90 dias</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="type">Tipo de vídeo</label>
+            <select id="type">
+              <option value="both" selected>Ambos</option>
+              <option value="long">Vídeos longos</option>
+              <option value="shorts">Shorts</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="order">Ordem no YouTube</label>
+            <select id="order">
+              <option value="viewCount" selected>Mais vistos</option>
+              <option value="relevance">Relevância</option>
+              <option value="date">Mais recentes</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pages">Quantidade de vídeos</label>
+            <select id="pages">
+              <option value="1" selected>50 vídeos</option>
+              <option value="2">100 vídeos</option>
+              <option value="3">150 vídeos</option>
+            </select>
+          </div>
+        </div>
+
+        <details class="channel-filters" open>
+          <summary>Filtros de canal <small>(aplicados antes de analisar — economizam cota)</small></summary>
+          <div class="grid">
+            <div class="field">
+              <label for="maxSubs">Máximo de inscritos</label>
+              <select id="maxSubs">
+                <option value="">Sem limite</option>
+                <option value="1000">1 mil</option>
+                <option value="5000">5 mil</option>
+                <option value="10000">10 mil</option>
+                <option value="50000" selected>50 mil</option>
+                <option value="100000">100 mil</option>
+                <option value="500000">500 mil</option>
+                <option value="1000000">1 milhão</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="maxAge">Idade máxima do canal</label>
+              <select id="maxAge">
+                <option value="" selected>Qualquer idade</option>
+                <option value="3">3 meses</option>
+                <option value="6">6 meses</option>
+                <option value="12">1 ano</option>
+                <option value="24">2 anos</option>
+                <option value="60">5 anos</option>
+              </select>
+            </div>
+            <div class="field span2">
+              <label>Vídeos publicados no canal</label>
+              <div class="range">
+                <input id="minVideos" type="number" min="0" inputmode="numeric" placeholder="mín.">
+                <span>até</span>
+                <input id="maxVideos" type="number" min="0" inputmode="numeric" placeholder="máx.">
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div class="form-footer">
+          <p id="costEstimate" class="cost"></p>
+          <button id="searchBtn" class="btn primary" type="submit">Buscar outliers</button>
+        </div>
+      </form>
+
+      <div id="progress" class="progress hidden" role="status">
+        <div class="spinner"></div><span id="progressText">Buscando…</span>
+      </div>
+      <div id="searchError" class="banner error hidden" role="alert"></div>
+
+      <div id="resultsArea" class="hidden">
+        <div class="card toolbar">
+          <div class="field">
+            <label for="minMult">Multiplicador mínimo</label>
+            <select id="minMult">
+              <option value="0">Todos</option>
+              <option value="2">2x ou mais</option>
+              <option value="3" selected>3x ou mais</option>
+              <option value="5">5x ou mais</option>
+              <option value="10">10x ou mais</option>
+              <option value="20">20x ou mais</option>
+              <option value="50">50x ou mais</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="facelessFilter">Faceless</label>
+            <select id="facelessFilter">
+              <option value="all" selected>Mostrar todos</option>
+              <option value="faceless">Só faceless (auto + manual)</option>
+              <option value="manual">Só os que marquei como faceless</option>
+              <option value="hideFace">Esconder os marcados "com rosto"</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="resultType">Formato</label>
+            <select id="resultType">
+              <option value="all" selected>Todos</option>
+              <option value="long">Só longos</option>
+              <option value="shorts">Só Shorts</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sortBy">Ordenar por</label>
+            <select id="sortBy">
+              <option value="mult" selected>Multiplicador</option>
+              <option value="views">Visualizações</option>
+              <option value="date">Data (mais recentes)</option>
+              <option value="subs">Inscritos (menos primeiro)</option>
+            </select>
+          </div>
+        </div>
+        <p id="resultsSummary" class="summary"></p>
+        <div id="results" class="results"></div>
+      </div>
+    </section>
+
+    <!-- ================= FAVORITOS ================= -->
+    <section id="tab-favorites" class="panel">
+      <div class="card fav-header">
+        <div>
+          <h2>Favoritos</h2>
+          <p class="muted">Vídeos e canais salvos, com suas anotações. Tudo fica salvo neste navegador.</p>
+        </div>
+        <div class="fav-actions">
+          <select id="favFilter" aria-label="Filtrar favoritos">
+            <option value="all">Tudo</option>
+            <option value="video">Só vídeos</option>
+            <option value="channel">Só canais</option>
+          </select>
+          <button id="exportCsv" class="btn primary">⬇️ Exportar CSV</button>
+        </div>
+      </div>
+      <div id="favList" class="fav-list"></div>
+    </section>
+
+    <!-- ================= CONFIGURAÇÕES ================= -->
+    <section id="tab-settings" class="panel">
+      <div class="card">
+        <h2>Chave da YouTube Data API</h2>
+        <p class="muted">A chave fica salva <strong>somente neste navegador</strong>. Ela nunca é enviada para outro lugar além do próprio Google. Não sabe como criar uma? Veja o passo a passo no README do projeto.</p>
+        <div class="field full">
+          <label for="apiKey">Sua chave</label>
+          <div class="key-row">
+            <input id="apiKey" type="password" placeholder="Cole aqui (começa com AIza…)" spellcheck="false" autocomplete="off">
+            <button id="toggleKey" class="btn" type="button">Mostrar</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="saveKey" class="btn primary" type="button">Salvar chave</button>
+          <button id="testKey" class="btn" type="button">Testar chave (gasta 1 unidade)</button>
+          <button id="removeKey" class="btn danger" type="button">Apagar chave</button>
+        </div>
+        <p id="keyStatus" class="status"></p>
+      </div>
+
+      <div class="card">
+        <h2>Cota diária</h2>
+        <p class="muted">O Google dá <strong>10.000 unidades por dia</strong> de graça. A contagem abaixo é uma estimativa feita por este navegador e zera à meia-noite do horário do Pacífico (≈ 4h–5h da manhã no Brasil).</p>
+        <div class="quota">
+          <div class="quota-bar"><div id="quotaFill"></div></div>
+          <p id="quotaText"></p>
+        </div>
+        <table class="cost-table">
+          <tr><td>Cada página de busca (50 vídeos)</td><td>100 unidades</td></tr>
+          <tr><td>Estatísticas de 50 vídeos ou canais</td><td>1 unidade</td></tr>
+          <tr><td>Calcular a mediana de um canal</td><td>2 unidades</td></tr>
+          <tr><td>Repetir uma busca nas próximas 12h</td><td>0 (cache)</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Preferências</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="baselineSize">Vídeos usados na mediana do canal</label>
+            <select id="baselineSize">
+              <option value="15">Últimos 15</option>
+              <option value="30">Últimos 30</option>
+              <option value="50">Últimos 50</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="themeSelect">Tema</label>
+            <select id="themeSelect">
+              <option value="auto">Automático (segue o sistema)</option>
+              <option value="dark">Escuro</option>
+              <option value="light">Claro</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Cache</h2>
+        <p class="muted">Resultados de buscas ficam guardados por 12 horas e dados de canais por 24 horas, para não gastar cota de novo. <span id="cacheSize"></span></p>
+        <button id="clearCache" class="btn" type="button">Limpar cache</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <footer class="footer">
+    Usa a YouTube Data API v3. Seus dados ficam só no seu navegador.
+  </footer>
+
+  <script src="js/outlier.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/youtube.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
